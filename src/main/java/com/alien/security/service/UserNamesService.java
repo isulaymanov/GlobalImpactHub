@@ -19,9 +19,8 @@ public class UserNamesService {
     private UserNamesRepository userNamesRepository;
 
     @Autowired
-    private UserRepo userRepository; // Репозиторий для UserModel
+    private UserRepo userRepository;
 
-    // Создание нового UserNames для текущего пользователя
     @Transactional
     public UserNames createUserNames(UserNames userNames) {
         String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -34,13 +33,11 @@ public class UserNamesService {
         return userNamesRepository.save(userNames);
     }
 
-    // Редактирование UserNames текущего пользователя
     @Transactional
     public UserNames updateUserNames(Long id, UserNames updatedUserNames) {
         UserNames existingUserNames = userNamesRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("UserNames not found"));
 
-        // Обновляем данные
         existingUserNames.setLanguage(updatedUserNames.getLanguage());
         existingUserNames.setFirstname(updatedUserNames.getFirstname());
         existingUserNames.setLastname(updatedUserNames.getLastname());
@@ -48,8 +45,6 @@ public class UserNamesService {
 
         return userNamesRepository.save(existingUserNames);
     }
-
-
 
     public List<UserNames> getUserNamesForCurrentUser() {
         String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -61,7 +56,6 @@ public class UserNamesService {
         return userNamesRepository.findByUser(user);
     }
 
-    // Удаление UserNames для текущего пользователя
     @Transactional
     public void deleteUserNames(Long id) {
         UserNames userNames = userNamesRepository.findById(id)
@@ -69,18 +63,12 @@ public class UserNamesService {
         userNamesRepository.delete(userNames);
     }
 
-    // Получение UserNames по ID для администратора
     public UserNames getUserNamesById(Long id) {
         return userNamesRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("UserNames not found"));
     }
 
-//    public List<UserNames> getUserNamesByUserId(int userId) {
-//
-//        return userNamesRepository.findAllByUserId(userId);
-//    }
     public List<UserNames> getUserNamesByUserId(int userId) {
-        // Проверяем, существует ли пользователь с таким ID
         Optional<UserModel> user = userRepository.findById(userId);
         if (user.isEmpty()) {
             throw new RuntimeException("Пользователь с id " + userId + " не найден");
@@ -88,7 +76,6 @@ public class UserNamesService {
 
         List<UserNames> userNamesList = userNamesRepository.findAllByUserId(userId);
 
-        // Если у пользователя нет имен в `UserNames`, можно либо вернуть пустой массив, либо выбросить ошибку
         if (userNamesList.isEmpty()) {
             throw new RuntimeException("У пользователя с id " + userId + " нет записей");
         }

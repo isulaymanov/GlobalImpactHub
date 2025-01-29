@@ -44,11 +44,6 @@ public class UserNamesController {
         return ResponseEntity.ok(userNames);
     }
 
-//    @GetMapping("/all/{userId}/admin")
-//    public ResponseEntity<List<UserNames>> getUserNamesByUserId(@PathVariable int userId) {
-//        List<UserNames> userNamesList = userNamesService.getUserNamesByUserId(userId);
-//        return ResponseEntity.ok(userNamesList);
-//    }
     @GetMapping("/all/{userId}/admin")
     public ResponseEntity<?> getUserNamesByUserId(@PathVariable int userId) {
         try {
@@ -59,6 +54,5 @@ public class UserNamesController {
         }
     }
 
-    // DTO для возврата ошибок
     public record ErrorResponse(int status, String message) {}
 }
