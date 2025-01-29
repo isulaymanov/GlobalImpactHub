@@ -11,6 +11,4 @@ import java.util.List;
 public interface SocialNetworkRepository extends JpaRepository<SocialNetwork, Long> {
     List<SocialNetwork> findByUser(UserModel user);
     List<SocialNetwork> findAllByUserId(int userId);
-
-
 }
