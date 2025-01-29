@@ -64,7 +64,10 @@ public class SecurityConfig {
 	        		"/api/createuser",
 	        		"/api/adduser",
 	        		"/api/refreshToken",
-					"/api/event/all"
+					"/api/event/all",
+					"/api/event/photo/*",
+					"/api/news/all",
+					"/api/news/photo/*"
 					).permitAll()
 	        .requestMatchers("/api/**", "/api/uploadPhoto/*", "/api/event/uploadPhoto/*", "/api/applications/submit", "/api/applications/currentuser").authenticated()
             .anyRequest().authenticated()
