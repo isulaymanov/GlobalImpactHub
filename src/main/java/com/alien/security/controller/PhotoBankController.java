@@ -1,8 +1,8 @@
 package com.alien.security.controller;
 
-import com.alien.security.entity.News;
+import com.alien.security.entity.PhotoBank;
 import com.alien.security.entity.UserModel;
-import com.alien.security.service.NewsService;
+import com.alien.security.service.PhotoBankService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
@@ -21,51 +21,51 @@ import java.util.Map;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/news")
-public class NewsController {
+@RequestMapping("/api/photo-bank")
+public class PhotoBankController {
     @Autowired
-    private NewsService newsService;
+    private PhotoBankService photoBankService;
 
     @PostMapping("/create")
-    public News createNews(@RequestBody News news, @AuthenticationPrincipal UserModel user) {
-        return newsService.createNews(news, user);
+    public PhotoBank createPhotoBank(@RequestBody PhotoBank photoBank, @AuthenticationPrincipal UserModel user) {
+        return photoBankService.createPhotoBank(photoBank, user);
     }
 
     @GetMapping("/currentuser")
-    public ResponseEntity<?> getNewsForCurrentUser(@AuthenticationPrincipal UserModel currentUser) {
-        List<News> news = newsService.getNewsByUser(currentUser);
+    public ResponseEntity<?> getPhotoBankForCurrentUser(@AuthenticationPrincipal UserModel currentUser) {
+        List<PhotoBank> photoBanks = photoBankService.getPhotoBankByUser(currentUser);
 
-        if (news == null || news.isEmpty()) {
+        if (photoBanks == null || photoBanks.isEmpty()) {
             return ResponseEntity.ok(Map.of("message", "У вас нет записей"));
         }
 
-        return ResponseEntity.ok(news);
+        return ResponseEntity.ok(photoBanks);
     }
 
 
     @GetMapping("/all")
-    public ResponseEntity<List<News>> getAllNews() {
-        List<News> news = newsService.getAllNews();
+    public ResponseEntity<List<PhotoBank>> getAllPhotoBank() {
+        List<PhotoBank> photoBanks = photoBankService.getAllPhotoBank();
 
-        if (news.isEmpty()) {
+        if (photoBanks.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
         }
 
-        return ResponseEntity.status(HttpStatus.OK).body(news);
+        return ResponseEntity.status(HttpStatus.OK).body(photoBanks);
     }
 
 
     @PatchMapping("/edit/{id}")
-    public ResponseEntity<String> updateNews(
+    public ResponseEntity<String> updatePhotoBank(
             @PathVariable("id") Long id,
-            @RequestBody News updatedNews,
+            @RequestBody PhotoBank updatedPhotoBank,
             @AuthenticationPrincipal UserModel user) {
         try {
-            News updated = newsService.updateNews(id, updatedNews, user);
+            PhotoBank updated = photoBankService.updatePhotoBank(id, updatedPhotoBank, user);
             if (updated != null) {
-                return ResponseEntity.status(HttpStatus.CREATED).body("ENews Updated Successfully");
+                return ResponseEntity.status(HttpStatus.CREATED).body("PhotoBank Updated Successfully");
             } else {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("ENews not found or not allowed to update");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("PhotoBank not found or not allowed to update");
             }
         } catch (Exception e) {
             System.out.println(e);
@@ -74,23 +74,22 @@ public class NewsController {
     }
 
     @DeleteMapping("/delete/{id}")
-    public void deleteNews(@PathVariable Long id, @AuthenticationPrincipal UserModel user) {
-        newsService.deleteNews(id, user);
+    public void deletePhotoBank(@PathVariable Long id, @AuthenticationPrincipal UserModel user) {
+        photoBankService.deletePhotoBank(id, user);
     }
-
 
     @PostMapping("/uploadPhoto/{id}")
     public ResponseEntity<?> uploadPhoto(@PathVariable Long id, @RequestParam("file") MultipartFile file, @AuthenticationPrincipal UserModel user) {
         try {
-            Optional<News> newsOptional = newsService.getNewsById(id);
-            if (newsOptional.isEmpty()) {
+            Optional<PhotoBank> photoBankOptional = photoBankService.getPhotoBankById(id);
+            if (photoBankOptional.isEmpty()) {
                 return ResponseEntity.notFound().build();
             }
 
-            News news = newsOptional.get();
-            String photoUrl = newsService.saveNewsPhoto(file);
-            news.setPhotoUrl(photoUrl);
-            newsService.updateNews(id, news, user);
+            PhotoBank photoBank = photoBankOptional.get();
+            String photoUrl = photoBankService.savePhotoBankPhoto(file);
+            photoBank.setPhotoUrl(photoUrl);
+            photoBankService.updatePhotoBank(id, photoBank, user);
 
             return ResponseEntity.ok("Фото загружена: " + photoUrl);
         } catch (IOException e) {
@@ -101,20 +100,20 @@ public class NewsController {
 
     @GetMapping("/photo/{id}")
     public ResponseEntity<Resource> getPhoto(@PathVariable Long id) {
-        Optional<News> newsOptional = newsService.getNewsById(id);
-        if (newsOptional.isEmpty()) {
+        Optional<PhotoBank> photoBankOptional = photoBankService.getPhotoBankById(id);
+        if (photoBankOptional.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
 
-        News news = newsOptional.get();
-        String photoUrl = news.getPhotoUrl();
+        PhotoBank photoBank = photoBankOptional.get();
+        String photoUrl = photoBank.getPhotoUrl();
 
         if (photoUrl == null || photoUrl.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
 
         try {
-            Path path = Paths.get("D:/uploadsNews").resolve(photoUrl.substring(photoUrl.lastIndexOf("/") + 1));  // Восстанавливаем путь до файла
+            Path path = Paths.get("D:/uploadsPhotoBank").resolve(photoUrl.substring(photoUrl.lastIndexOf("/") + 1));  // Восстанавливаем путь до файла
             Resource resource = new FileSystemResource(path);
 
             if (!resource.exists()) {
@@ -132,8 +131,8 @@ public class NewsController {
     }
 
     @GetMapping("/{id}")
-    public News NewsById(@PathVariable Long id) {
-        return newsService.NewsById(id);
+    public PhotoBank PhotoBankById(@PathVariable Long id) {
+        return photoBankService.PhotoBankById(id);
     }
 
 }

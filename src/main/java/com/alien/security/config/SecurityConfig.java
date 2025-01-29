@@ -67,7 +67,9 @@ public class SecurityConfig {
 					"/api/event/all",
 					"/api/event/photo/*",
 					"/api/news/all",
-					"/api/news/photo/*"
+					"/api/news/photo/*",
+					"/api/photo-bank/all",
+					"/api/photo-bank/photo/*"
 					).permitAll()
 	        .requestMatchers("/api/**", "/api/uploadPhoto/*", "/api/event/uploadPhoto/*", "/api/applications/submit", "/api/applications/currentuser").authenticated()
             .anyRequest().authenticated()
