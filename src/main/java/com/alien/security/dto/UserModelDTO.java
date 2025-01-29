@@ -12,11 +12,13 @@ import lombok.Setter;
 public class UserModelDTO {
 
     private int id;
-    private String name;
-    private String lastName;
-    private String middleName;
+    private String phone;
+    private String email;
+    private String dateOfBirth;
+    private String photoUrl;
+    private String gender;
+    private String greeting;
     private String username;
     private String role;
-
 
 }

@@ -25,12 +25,17 @@ public class UserModel implements UserDetails {
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private int id;
-    private String name;
-    private String lastName;
-    private String middleName;
+    private String phone;
+    private String email;
+    private String dateOfBirth;
+    private String photoUrl;
+    private String gender;
+    private String greeting;
+
     private String username;
     private String password;
     private String role;
+
    
     @OneToOne(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true)
     @JsonIgnore
@@ -74,10 +79,10 @@ public class UserModel implements UserDetails {
         return true;
     }
 
-    @Override
+
     public String toString() {
-        return "UserModel [id=" + id + ", name=" + name + ", lastName=" + lastName +
-                ", middleName=" + middleName + ", username=" + username + ", password=" + password +
+        return "UserModel [id=" + id + ", phone=" + phone + ", email=" + email +
+                ", dateOfBirth=" + dateOfBirth + ", photoUrl=" + photoUrl + ", gender=" + gender + ", greeting=" + greeting + ", username=" + username + ", password=" + password +
                 ", role=" + role + ", refreshToken=" + refreshToken + "]";
     }
 

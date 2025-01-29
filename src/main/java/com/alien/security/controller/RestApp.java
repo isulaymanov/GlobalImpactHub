@@ -1,17 +1,23 @@
 package com.alien.security.controller;
 
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.Principal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import com.alien.security.dto.UserModelDTO;
 import com.alien.security.jwt.CustomUserDetailService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -22,16 +28,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
+import org.springframework.web.bind.annotation.*;
+import org.springframework.core.io.Resource;
 import com.alien.security.entity.RefreshToken;
 import com.alien.security.entity.UserModel;
 import com.alien.security.jwt.JWTHepler;
@@ -43,6 +41,7 @@ import com.alien.security.service.Userservice;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.web.multipart.MultipartFile;
 
 
 @RestController
@@ -92,9 +91,12 @@ public class RestApp {
 		UserModel user = (UserModel) customUserDetailService.loadUserByUsername(principal.getName());
 		return new UserModelDTO(
 				user.getId(),
-				user.getName(),
-				user.getLastName(),
-				user.getMiddleName(),
+				user.getPhone(),
+				user.getEmail(),
+				user.getDateOfBirth(),
+				user.getPhotoUrl(),
+				user.getGender(),
+				user.getGreeting(),
 				user.getUsername(),
 				user.getRole()
 		);
@@ -118,17 +120,68 @@ public class RestApp {
 	@PostMapping("/createuser")
 	public ResponseEntity<Map<UserModel,String>> createUser(@RequestBody UserModel userModel){
 		try {
-	        System.out.println(userModel);
 	        UserModel user = userservice.createUser(userModel);
 	        Map<UserModel, String> data = new HashMap<>();
 	        data.put(user, "User Created");
 		    return ResponseEntity.status(HttpStatus.OK).body(data);
 		}catch (BadCredentialsException e) {
-			System.out.println("Line 109 RestApp");
             throw new BadCredentialsException(" Duplicate UserName : "+e.toString());
         }
 	}
-	
+
+	@PostMapping("/uploadPhoto/{id}")
+	public ResponseEntity<?> uploadPhoto(@PathVariable Integer id, @RequestParam("file")MultipartFile file) {
+		try {
+			Optional<UserModel> userModelOptional = userservice.getUserById(id);
+			if (userModelOptional.isEmpty()) {
+				return ResponseEntity.notFound().build();
+			}
+
+			UserModel user = userModelOptional.get();
+			String photoUrl = userservice.savePhoto(file);
+			user.setPhotoUrl(photoUrl);
+			userservice.updateUser(id, user);
+
+			return ResponseEntity.ok("Фото загружена: " + photoUrl);
+		} catch (IOException e) {
+			e.printStackTrace();
+			return ResponseEntity.status(500).body("Ошибка загрузки фото");
+		}
+	}
+
+	@GetMapping("/getPhoto/{id}")
+	public ResponseEntity<Resource> getPhoto(@PathVariable Integer id) {
+		Optional<UserModel> userModelOptional = userservice.getUserById(id);
+		if (userModelOptional.isEmpty()) {
+			return ResponseEntity.notFound().build();
+		}
+
+		UserModel user = userModelOptional.get();
+		String photoUrl = user.getPhotoUrl();
+
+		if (photoUrl == null || photoUrl.isEmpty()) {
+			return ResponseEntity.notFound().build();
+		}
+
+		try {
+			Path path = Paths.get("D:/uploads").resolve(photoUrl.substring(photoUrl.lastIndexOf("/") + 1));  // Восстанавливаем путь до файла
+			Resource resource = new FileSystemResource(path);
+
+			if (!resource.exists()) {
+				return ResponseEntity.notFound().build();
+			}
+
+			return ResponseEntity.ok()
+					.contentType(MediaType.IMAGE_PNG)
+					.body(resource);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			return ResponseEntity.status(500).body(null);
+		}
+	}
+
+
 	@ExceptionHandler(DataIntegrityViolationException.class)
     public String exceptionHandlerDupicateUsername(String str) {
         return  str;
@@ -140,11 +193,9 @@ public class RestApp {
 		try {
 			int userid = userModel.getId();
 			userservice.updateUser(userid,userModel);
-		    System.out.println(userModel);
 		    return ResponseEntity.status(HttpStatus.CREATED).body("Updated Successfully");
 		}catch (Exception e) {
 			// TODO: handle exception
-			System.out.println(e);
 			String error = "Error "+e;
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
 		}
@@ -154,7 +205,6 @@ public class RestApp {
 	public ResponseEntity<String> deleteUser(@PathVariable String username){
 		try {
 		userservice.deleteUser(username);
-		System.out.println("Deleted : "+username);
 		return ResponseEntity.status(HttpStatus.OK).build();
 		}catch (Exception e) {
 			System.out.println(e);

@@ -64,14 +64,9 @@ public class SecurityConfig {
 	        		"/api/createuser",
 	        		"/api/adduser",
 	        		"/api/refreshToken",
-					"/testing/**",
-					"/api/testing-group/group/*",
-					"/api/testing-group/testing-group/all",
-					"/api/answer-option/question/*",
-					"/api/question/testing/*",
-					"/api/attempt-student"
+					"/api/event/all"
 					).permitAll()
-	        .requestMatchers("/api/**").authenticated()
+	        .requestMatchers("/api/**", "/api/uploadPhoto/*", "/api/event/uploadPhoto/*", "/api/applications/submit", "/api/applications/currentuser").authenticated()
             .anyRequest().authenticated()
             )
 	        .exceptionHandling(ex -> ex.authenticationEntryPoint(point))
