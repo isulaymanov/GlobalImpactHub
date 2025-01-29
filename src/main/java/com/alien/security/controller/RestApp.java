@@ -149,7 +149,7 @@ public class RestApp {
 		}
 	}
 
-	@GetMapping("/getPhoto/{id}")
+	@GetMapping("/photo-user/{id}")
 	public ResponseEntity<Resource> getPhoto(@PathVariable Integer id) {
 		Optional<UserModel> userModelOptional = userservice.getUserById(id);
 		if (userModelOptional.isEmpty()) {

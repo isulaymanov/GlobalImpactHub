@@ -99,7 +99,7 @@ public class EventController {
         }
     }
 
-    @GetMapping("/getPhoto/{id}")
+    @GetMapping("/photo/{id}")
     public ResponseEntity<Resource> getPhoto(@PathVariable Long id) {
         Optional<Event> eventOptional = eventService.getEventById(id);
         if (eventOptional.isEmpty()) {
