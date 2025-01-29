@@ -12,5 +12,4 @@ import java.util.Optional;
 public interface PhotoBankRepository extends JpaRepository<PhotoBank, Long> {
     List<PhotoBank> findByUser(UserModel user);
     Optional<PhotoBank> findByIdAndUser(Long id, UserModel user);
-
 }
